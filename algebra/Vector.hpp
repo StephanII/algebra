@@ -1,18 +1,11 @@
-/*
- * Vector.h
- *
- *  Created on: 02.09.2009
- *      Author: stephanreimann
- */
-
 #ifndef VECTOR_H_
 #define VECTOR_H_
 
 #include <iostream>
+#include <vector>
 #include <cmath>
 
 #include "Exception.hpp"
-#include "Matrix.hpp"
 
 using namespace std;
 
@@ -35,8 +28,8 @@ public:
 	virtual
 	~Vector();
 
-	double&
-	operator()(unsigned int i) throw (Exception);
+	friend ostream&
+	operator<<(ostream& os, const Vector& vector);
 
 	double&
 	operator[](unsigned int i) throw (Exception);
@@ -51,7 +44,7 @@ public:
 	operator!=(const Vector& vector) const;
 
 	Vector
-	operator+(const Vector& vector) const;
+	operator+(const Vector& vector) const throw (Exception);
 
   	Vector&
 	operator+=(const Vector& vector);
@@ -72,22 +65,13 @@ public:
 	operator*(double factor, const Vector& vector);
 
   	double
-	operator*(const Vector& vector) const;
+	operator*(const Vector& vector) const throw (Exception);
 
 	Vector
 	operator/(double divisor) const throw (Exception);
 
-	friend ostream&
-	operator<<(ostream& os, const Vector& vector);
-
 	unsigned int
-  	getDimension() const;
-
-	double
-	get(unsigned int i) const throw (Exception);
-
-	void
-	set(unsigned int i, double value) throw (Exception);
+  	dim() const;
 
 	double
 	norm() const;
@@ -96,10 +80,10 @@ public:
 	abs(const Vector& vector);
 
 	Vector
-	normalized() const throw (Exception);
+	normalize() const throw (Exception);
 
 	friend Vector
-	normalized(const Vector& vector) throw (Exception);
+	normalize(const Vector& vector) throw (Exception);
 
 	double
 	angle(const Vector& v) const throw (Exception);
@@ -108,22 +92,17 @@ public:
 	angle(const Vector& a, const Vector& b) throw (Exception);
 
 	Vector
-	crossProduct(const Vector& v) const throw (Exception);
+	cross(const Vector& v) const throw (Exception);
 
 	friend Vector
-	crossProduct(const Vector& a, const Vector& b) throw (Exception);
+	cross(const Vector& a, const Vector& b) throw (Exception);
 
 	bool
 	isNullvector() const;
 
 private:
 
-	void
-	copy(const Vector& vector);
-
-	unsigned int m_dimension;
-
-	double* m_values;
+	vector<double> m_values;
 };
 
 #endif /* VECTOR_H_ */

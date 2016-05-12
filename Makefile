@@ -3,7 +3,7 @@ CC = llvm-g++
 CPP_FILES := $(wildcard algebra/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
 LD_FLAGS := 
-CC_FLAGS := -Wall -pedantic -O3 #(optimierung) # -g (for debugging)
+CC_FLAGS := -Wall -std=c++11 -pedantic -O3 #(optimierung) # -g (for debugging)
 
 test.exe: test.o $(OBJ_FILES)
 	$(CC) $(LD_FLAGS) -o $@ $^
