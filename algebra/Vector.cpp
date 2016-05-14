@@ -8,8 +8,8 @@ Vector::Vector() :
 	m_values(3)
 {
 	m_values.at(0) = 0;
-	m_values.at(1) = 1;
-	m_values.at(2) = 2;		
+	m_values.at(1) = 0;
+	m_values.at(2) = 0;		
 }
 
 
@@ -303,7 +303,14 @@ Vector::angle(const Vector& vector) const throw (Exception)
 	if (norm() * vector.norm() == 0) {
 		throw Exception(__FILE__, __LINE__, "Error, nullvector has no direction ergo no angle.");
     } else {
-      	return ((*this * vector) / this->norm() * vector.norm());
+		double cos_angle = (((*this) * vector) / (this->norm() * vector.norm()));
+		if (cos_angle >= 1){ 
+			return 0; 
+		} else if (cos_angle <= -1){ 
+			return M_PI;
+		} else {		
+	      	return acos(cos_angle);
+	    }
     }
 }
 
@@ -324,9 +331,9 @@ Vector::cross(const Vector& vector) const throw (Exception)
       throw Exception(__FILE__, __LINE__, "Error, cross product is only defined in 3 dimensions.");
     } else {
     	Vector cross_product(3);
-    	cross_product[0] = m_values[2] * vector.m_values[3] - m_values[3] * vector.m_values[2];
-    	cross_product[1] = m_values[3] * vector.m_values[1] - m_values[1] * vector.m_values[3];
-      	cross_product[2] = m_values[1] * vector.m_values[2] - m_values[2] * vector.m_values[1];
+    	cross_product[0] = m_values[1] * vector.m_values[2] - m_values[2] * vector.m_values[1];
+    	cross_product[1] = m_values[2] * vector.m_values[0] - m_values[0] * vector.m_values[2];
+      	cross_product[2] = m_values[0] * vector.m_values[1] - m_values[1] * vector.m_values[0];
     	return cross_product;
     }
 }

@@ -271,7 +271,7 @@ Matrix::operator*(const Matrix& matrix) const throw (Exception)
 Vector
 Matrix::operator*(const Vector& vector) const throw (Exception)
 {
-  if (m_cols != vector.getDimension())
+  if (m_cols != vector.dim())
     {
       throw Exception(__FILE__, __LINE__,
           "Error, vector dimension must be the same as the number of matrix columns");
@@ -282,7 +282,7 @@ Matrix::operator*(const Vector& vector) const throw (Exception)
     {
       for (unsigned int col = 0; col < m_cols; col++)
         {
-          product[row] += get(row, col) * vector.get(col);
+          product[row] += get(row, col) * vector.m_values.at(col);
         }
     }
   return product;

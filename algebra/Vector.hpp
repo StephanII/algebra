@@ -11,6 +11,8 @@ using namespace std;
 
 class Vector
 {
+friend class Matrix;
+
 public:
 
 	Vector();

@@ -2,14 +2,343 @@
 #include "../algebra/Vector.hpp"
 #include "../algebra/Matrix.hpp"
 
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cmath>
+#include <chrono>
+#include <random>
 
-int main()
+
+
+using namespace std;
+
+
+
+unsigned int assertTrue(bool b, string description)
 {
+	if(b){
+		cout << "\033[1;32mTest OK\033[0m\t\t" << description << endl;
+		return 0;
+	} else {
+		cout << "\033[1;31mTest FAILED\033[0m\t" << description << endl;
+		return 1;
+	}
+}
 
 
 
+template<typename T, typename U>
+unsigned int assertEqual(T a, U b, string description)
+{
+	if(a==b){
+		cout << "\033[1;32mTest OK\033[0m\t\t" << description << " -> " << a << " == " << b << endl;
+		return 0;
+	} else {
+		cout << "\033[1;31mTest FAILED\033[0m\t" << description << " -> " << a << " != " << b<< endl;
+		return 1;
+	}
+}
 
 
+
+template<typename T, typename U>
+unsigned int assertDifferent(T a, U b, string description)
+{
+	if(!(a==b)){
+		cout << "\033[1;32mTest OK\033[0m\t\t" << description << " -> " << a << " != " << b << endl;
+		return 0;
+	} else {
+		cout << "\033[1;31mTest FAILED\033[0m\t" << description << " -> " << a << " == " << b<< endl;
+		return 1;
+	}
+}
+
+
+
+template<typename T, typename U, typename V>
+unsigned int assertEqual(T a, U b, V diff, string description)
+{
+	if(abs(a-b)<diff){
+		cout << "\033[1;32mTest OK\033[0m\t\t" << description << " -> " << a << " = " << b << endl;
+		return 0;
+	} else {
+		cout << "\033[1;31mTest FAILED\033[0m\t" << description << " -> " << a << " != " << b<< endl;
+		return 1;
+	}
+}
+
+
+
+unsigned int test_vector_constructors(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_vector_constructors\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_real_distribution<double> rdist(-100,100);
+	unsigned int failcount = 0;
+
+	// standard constructor
+	Vector v;
+	failcount += assertEqual(v[0],0.,"standard constructor at 0");
+	failcount += assertEqual(v[1],0.,"standard constructor at 1");
+	failcount += assertEqual(v[2],0.,"standard constructor at 2");		
+	failcount += assertEqual(v.dim(),3,"standard constructor dimension");	
+	failcount += assertTrue(v.isNullvector(),"standard constructor is null");
+	failcount += assertEqual(v.norm(),0,"standard constructor norm");	
+	try { v[4]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+	try { v[-1]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }		
+	
+	// 2d constructor
+	double x0 = rdist(gen);
+	double x1 = rdist(gen);
+	Vector v2d(x0,x1);
+	failcount += assertEqual(v2d[0],x0,"2d constructor at 0");
+	failcount += assertEqual(v2d[1],x1,"2d constructor at 1");
+	failcount += assertEqual(v2d.dim(),2,"2d constructor dimension");	
+	failcount += assertTrue(!v2d.isNullvector(),"2d constructor is not null");
+	failcount += assertEqual(v2d.norm(),sqrt(x0*x0+x1*x1),"2d constructor norm");		
+
+	// 3d constructor
+	double x2 = rdist(gen);
+	Vector v3d(x0,x1,x2);
+	failcount += assertEqual(v3d[0],x0,"3d constructor at 0");
+	failcount += assertEqual(v3d[1],x1,"3d constructor at 1");
+	failcount += assertEqual(v3d[2],x2,"3d constructor at 2");	
+	failcount += assertEqual(v3d.dim(),3,"3d constructor dimension");	
+	failcount += assertTrue(!v3d.isNullvector(),"3d constructor is not null");
+	failcount += assertEqual(v3d.norm(),sqrt(x0*x0+x1*x1+x2*x2),"3d constructor norm");	
+	
+	// 6d constructor
+	double x3 = rdist(gen);
+	double x4 = rdist(gen);
+	double x5 = rdist(gen);
+	Vector v6d(x0,x1,x2,x3,x4,x5);
+	failcount += assertEqual(v6d[0],x0,"6d constructor at 0");
+	failcount += assertEqual(v6d[1],x1,"6d constructor at 1");
+	failcount += assertEqual(v6d[2],x2,"6d constructor at 2");	
+	failcount += assertEqual(v6d[3],x3,"6d constructor at 3");
+	failcount += assertEqual(v6d[4],x4,"6d constructor at 4");	
+	failcount += assertEqual(v6d[5],x5,"6d constructor at 5");		
+	failcount += assertEqual(v6d.dim(),6,"6d constructor dimension");	
+	failcount += assertTrue(!v6d.isNullvector(),"6d constructor is not null");
+	failcount += assertEqual(v6d.norm(),sqrt(x0*x0+x1*x1+x2*x2+x3*x3+x4*x4+x5*x5),"6d constructor norm");	
+	
+	// copy constructor
+	Vector v6d_copy(v6d);
+	failcount += assertEqual(v6d[0],v6d_copy[0],"copy constructor at 0");
+	failcount += assertEqual(v6d[1],v6d_copy[1],"copy constructor at 1");
+	failcount += assertEqual(v6d[2],v6d_copy[2],"copy constructor at 2");	
+	failcount += assertEqual(v6d[3],v6d_copy[3],"copy constructor at 3");
+	failcount += assertEqual(v6d[4],v6d_copy[4],"copy constructor at 4");	
+	failcount += assertEqual(v6d[5],v6d_copy[5],"copy constructor at 5");		
+	failcount += assertEqual(v6d_copy.dim(),6,"copy constructor dimension");	
+	failcount += assertTrue(!v6d_copy.isNullvector(),"copy constructor is not null");
+	failcount += assertEqual(v6d_copy.norm(),sqrt(x0*x0+x1*x1+x2*x2+x3*x3+x4*x4+x5*x5),"6d constructor norm");	
+		
+	if( verbose ){
+		cout << v << endl;
+		cout << v2d << endl;	
+		cout << v3d << endl;			
+		cout << v6d << endl;			
+		cout << v6d_copy << endl;
+	}		
+	
+	return failcount;
+}
+
+
+
+unsigned int test_vector_operators(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_vector_operators\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_real_distribution<double> rdist(-100,100);
+	unsigned int failcount = 0;
+	
+	double x0 = rdist(gen);
+	double x1 = rdist(gen);
+	double x2 = rdist(gen);		
+	double y0 = rdist(gen);	
+	double y1 = rdist(gen);
+	double y2 = rdist(gen);		
+		
+	Vector x(x0,x1,x2);
+	Vector u(-x0,-x1,-x2);	
+	Vector y(y0,y1,y2);
+	Vector z;
+	
+	// negation operator
+	Vector minus_x = -x;
+	failcount += assertEqual(minus_x[0],-x0,"operator -x[0]");	
+	failcount += assertEqual(minus_x[1],-x1,"operator -x[1]");	
+	failcount += assertEqual(minus_x[2],-x2,"operator -x[2]");
+	failcount += assertEqual(minus_x.dim(),x.dim(),"operator -x dimension");			
+	
+	// comparison operators
+	failcount += assertTrue(x==x,"operator x==x");
+	failcount += assertTrue(u==u,"operator u==u");	
+	failcount += assertTrue(x!=u,"operator x!=u");
+	failcount += assertEqual(y,y,"operator y==y");
+	failcount += assertDifferent(y,z,"operator y!=z");	
+	failcount += assertEqual(-y,-y,"operator -y==-y");
+	failcount += assertEqual(x,-u,"operator x==-u");
+	failcount += assertEqual(u,-x,"operator u==-x");	
+	failcount += assertEqual(z,-z,"operator z==-z");
+	failcount += assertDifferent(x,y,"operator x!=y");	
+	
+	// copy operator
+	Vector q=x;
+	failcount += assertEqual(q,x,"copy operator q=x");
+		
+	// add and subtract
+	Vector sum = x+y;	
+	Vector dif = x-y;		
+	failcount += assertEqual(sum[0],x[0]+y[0],"add vectors 0");
+	failcount += assertEqual(sum[1],x[1]+y[1],"add vectors 1");
+	failcount += assertEqual(sum[2],x[2]+y[2],"add vectors 2");	
+	failcount += assertEqual(z,x+u,"add vectors to 0");	
+	failcount += assertEqual(dif[0],x[0]-y[0],"subtract vectors 0");
+	failcount += assertEqual(dif[1],x[1]-y[1],"subtract vectors 1");
+	failcount += assertEqual(dif[2],x[2]-y[2],"subtract vectors 2");			
+	failcount += assertEqual(z,x-x,"subtract vectors to 0");
+	failcount += assertEqual(x+y,y+x,"commutation");
+	failcount += assertEqual(x-y,-(y-x),"commutation 2");
+	try { Vector(2,1)+x; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }	
+	
+	// factor and division
+	double f = rdist(gen);
+	double d = rdist(gen); if (d==0){d=1;}
+	Vector fx = f*x;
+	Vector xd = x/d;
+	failcount += assertEqual(fx[0],f*x[0],"mult factor 0");
+	failcount += assertEqual(fx[1],f*x[1],"mult factor 1");
+	failcount += assertEqual(fx[2],f*x[2],"mult factor 2");		
+	failcount += assertEqual(-f*x,-(f*x),"factor in braces");	
+	failcount += assertEqual(0*x,z,"factor 0");	
+	failcount += assertEqual(xd[0],x[0]/d,0.00001,"divide 0");
+	failcount += assertEqual(xd[1],x[1]/d,0.00001,"divide 1");
+	failcount += assertEqual(xd[2],x[2]/d,0.00001,"divide 2");
+	failcount += assertEqual(2*x/2,x,"factor and division");	
+	failcount += assertEqual(f*-x,-f*(2*x/2),"some braces");	
+	
+	// algebra
+	Vector n(2,-1,5);
+	Vector m(-1,0,4);
+	double f2 = 2;
+	failcount += assertEqual(f2*(n+m),f2*n+f2*m,"algebra 1");
+	failcount += assertEqual((3*(2*x-4*y-x))[0],(3*x-12*y)[0],0.00001,"algebra 2_0");
+	failcount += assertEqual((3*(2*x-4*y-x))[1],(3*x-12*y)[1],0.00001,"algebra 2_1");
+	failcount += assertEqual((3*(2*x-4*y-x))[2],(3*x-12*y)[2],0.00001,"algebra 2_2");	
+	
+	// scalar product and norm
+	failcount += assertEqual(z*z,0,"scalar product null vector");
+	failcount += assertEqual(x*x,u*u,"scalar product x*x and -x*-x");	
+	failcount += assertEqual(x*x,x0*x0+x1*x1+x2*x2,"scalar product x*x");
+	failcount += assertEqual(x*y,x0*y0+x1*y1+x2*y2,"scalar product x*y");	
+	failcount += assertEqual(x*y,y*x,"scalar product x*y == y*x");
+	failcount += assertEqual(abs(x),sqrt(x0*x0+x1*x1+x2*x2),"norm x");
+	failcount += assertEqual(abs(y),sqrt(y0*y0+y1*y1+y2*y2),"norm y");
+	failcount += assertEqual(x.norm(),u.norm(),"norm x = norm -x");		
+	failcount += assertEqual(x.norm(),sqrt(x*x),"norm x 2");		
+	failcount += assertEqual((2*x).norm(),2*abs(x),"norm(2x) = 2abs(x)");
+	failcount += assertEqual(abs(x.normalize()),1.,0.00001,"normalization");	
+	try { z.normalize(); } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+
+	if( verbose ){
+		cout << x << endl;
+		cout << u << endl;	
+		cout << y << endl;
+		cout << z << endl;
+	}	
+	
+	return failcount;
+}
+
+
+
+unsigned int test_vector_angle_and_cross(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_vector_angle_and_cross\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_real_distribution<double> rdist(-100,100);
+	unsigned int failcount = 0;
+	
+	double x0 = rdist(gen);
+	double x1 = rdist(gen);
+	double x2 = rdist(gen);		
+	double y0 = rdist(gen);	
+	double y1 = rdist(gen);
+	double y2 = rdist(gen);	
+		
+	Vector x(x0,x1);	
+	Vector y(y0,y1);
+	Vector z(0,0);
+	Vector e1(1,0);
+	Vector e2(0,1);	
+	Vector v45(1,1);
+	Vector xx(x0,x1,x2);
+	Vector yy(y0,y1,y2);	
+	
+	// angles
+	failcount += assertEqual(angle(e1,e2),0.5*M_PI,0.0000001,"angle 90°");	
+	failcount += assertEqual(angle(x,x),0,0.0000001,"angle self");
+	failcount += assertEqual(angle(e1,-e1),M_PI,0.0000001,"angle 180°");	
+	failcount += assertEqual(angle(e1,-e2),0.5*M_PI,0.0000001,"angle 270°");	
+	failcount += assertEqual(angle(e1,v45),0.25*M_PI,0.0000001,"angle 45°");		
+
+	// cross product
+	Vector c = xx.cross(yy);
+	failcount += assertEqual(c[0],xx[1]*yy[2]-xx[2]*yy[1],0.0000001,"cross 0");
+	failcount += assertEqual(c[1],xx[2]*yy[0]-xx[0]*yy[2],0.0000001,"cross 1");
+	failcount += assertEqual(c[2],xx[0]*yy[1]-xx[1]*yy[0],0.0000001,"cross 2");
+	double o = abs(c)/(abs(xx)*abs(yy));
+	if( o>1 ){ o=1; }	if( o<-1 ){ o=-1; }	
+	double p = (xx*yy)/(abs(xx)*abs(yy));
+	if( p>1 ){ p=1; }	if( p<-1 ){ p=-1; }		
+	failcount += assertEqual(abs(cos(asin(o))),abs(p),0.0000001,"criss cross ");	
+
+	if( verbose ){
+		cout << x << endl;
+		cout << y << endl;
+		cout << z << endl;
+		cout << e1 << endl;
+		cout << e2 << endl;
+		cout << v45 << endl;		
+	}	
+	
+	return failcount;
+}
+
+
+
+int main(int argc, char* argv[])
+{
+	double failcount = 0;
+	double verbose = false;
+	
+	if( argc > 1 ){
+		if ( string(argv[1]) == string("-v") ){
+			verbose = true;
+		}
+	}
+
+	try {
+
+		failcount+=test_vector_constructors(verbose);	
+		failcount+=test_vector_operators(verbose);	
+		failcount+=test_vector_angle_and_cross(verbose);
+
+	} catch(Exception& e){ e.print(); }
+	
+	
+	if(failcount==0){
+		cout << "\033[1;32mAll tests passed!\033[0m\t\t" << endl;
+	} else {
+		cout << "\033[1;31m" << failcount << " tests failed\033[0m\t\t" << endl;
+	}
 
 	return 0;
 }
