@@ -15,7 +15,7 @@ public:
 
 	Matrix();
 
-	Matrix(unsigned int rows, unsigned int cols);
+	Matrix(unsigned int rows, unsigned int cols) throw (Exception);
 
 	Matrix(const Matrix& matrix);
 
@@ -60,94 +60,91 @@ public:
 
 	friend Matrix
 	operator*(double factor, const Matrix& matrix);
-/*
-  Matrix
-  operator*(const Matrix& matrix) const throw (Exception);
 
-  Vector
-  operator*(const Vector& vector) const throw (Exception);
+	Matrix
+	operator*(const Matrix& matrix) const throw (Exception);
 
-  Matrix&
-  operator*=(const Matrix& matrix) throw (Exception);
+	Vector
+	operator*(const Vector& vector) const throw (Exception);
 
-  Matrix
-  operator/(double divisor) const throw (Exception);
+	Matrix&
+	operator*=(const Matrix& matrix) throw (Exception);
 
-  Matrix
-  operator/(const Matrix& matrix) const throw (Exception);
+	Matrix
+	operator/(double divisor) const throw (Exception);
 
-*/
-  unsigned int
-  rows() const;
+	Matrix
+	operator/(const Matrix& matrix) const throw (Exception);
 
-  unsigned int
-  cols() const;
-/*
+	unsigned int
+	rows() const;
 
-  Matrix
-  submatrix(unsigned int remove_row, unsigned int remove_col) const
-      throw (Exception);
+	unsigned int
+	cols() const;
 
-  Matrix
-  transposed() const;
+ 	Matrix
+ 	submatrix(unsigned int remove_row, unsigned int remove_col) const throw (Exception);
 
-  friend Matrix
-  transposed(const Matrix& matrix);
+	Matrix
+	transposed() const;
 
-  double
-  cofactor(unsigned int row, unsigned int col) const throw (Exception);
+	friend Matrix
+	transposed(const Matrix& matrix);
 
-  Matrix
-  adjugate() const throw (Exception);
+	double
+	cofactor(unsigned int row, unsigned int col) const throw (Exception);
 
-  friend Matrix
-  adjugate(const Matrix& matrix) throw (Exception);
+	Matrix
+	adjugate() const throw (Exception);
 
-  Matrix
-  conjugate() const;
+	friend Matrix
+	adjugate(const Matrix& matrix) throw (Exception);
 
-  friend Matrix
-  conjugate(const Matrix& matrix);
+	Matrix
+	conjugate() const;
 
-  Matrix
-  inverse() const throw (Exception);
+	friend Matrix
+  	conjugate(const Matrix& matrix);
 
-  friend Matrix
-  inverse(const Matrix& matrix) throw (Exception);
+  	Matrix
+  	inverse() const throw (Exception);
 
-  double
-  det() const throw (Exception);
+	friend Matrix
+	inverse(const Matrix& matrix) throw (Exception);
 
-  friend double
-  det(const Matrix& matrix) throw (Exception);
+	double
+	det() const throw (Exception);
 
-  double
-  trace() const throw (Exception);
+	friend double
+	det(const Matrix& matrix) throw (Exception);
 
-  friend double
-  trace(const Matrix& matrix) throw (Exception);
+	double
+	trace() const throw (Exception);
 
-  friend Matrix
-  pow(const Matrix& matrix, int power) throw (Exception);
+	friend double
+  	trace(const Matrix& matrix) throw (Exception);
 
-  bool
-  isSquare() const;
+	friend Matrix
+	pow(const Matrix& matrix, int power) throw (Exception);
 
-  bool
-  isInvertible() const;
+	bool
+	isSquare() const;
 
-  bool
-  isUnitary() const;
+	bool
+	isInvertible() const;
 
-  static Matrix
-  UNITY(unsigned int dimension);
+	bool
+	isUnitary() const;
 
-  static Matrix
-  ZERO(unsigned int dimension);
-*/
+  	static Matrix
+	UNITY(unsigned int dimension);
+
+	static Matrix
+	ZERO(unsigned int dimension);
+
 private:
 
-  vector<Vector> m_row_vectors;
+	vector<Vector> m_row_vectors;
 };
 
 #endif /* MATRIX_H_ */

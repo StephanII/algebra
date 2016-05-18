@@ -473,10 +473,91 @@ unsigned int test_matrix_operators(bool verbose)
 		cout << m2 << endl;			
 		cout << sum << endl;	
 		cout << diff << endl;			
+		cout << diff2 << endl;					
+		cout << f << endl;				
 	}		
 	
 	return failcount;
 }
+
+
+
+unsigned int test_matrix_multiplication(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_matrix_multiplication\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_int_distribution<double> rdist(-9,9);
+    uniform_int_distribution<double> idist(1,20);    
+	unsigned int failcount = 0;
+
+	Matrix m1(idist(gen),idist(gen));
+	Matrix m2(m1.cols(),m1.rows());
+	for(int i=0; i<m1.rows(); i++){
+		for(int j=0; j<m1.cols(); j++){
+			m1[i][j] = rdist(gen);
+			m2[j][i] = rdist(gen);
+		}
+	}	
+	Matrix m = m1*m2;
+	Matrix n(m1.rows(),m2.cols());
+	
+	// matrix multiplication
+	failcount += assertEqual(n.cols(),m.cols(),"matrix multiplication cols");	
+	failcount += assertEqual(n.rows(),m.rows(),"matrix multiplication rows");		
+
+	for(int i=0; i<m1.rows(); i++){
+		for(int j=0; j<m1.cols(); j++){
+			for(int r=0; r<m2.cols(); r++){	
+				n[i][r] += m1[i][j] * m2[j][r];
+			}
+		}
+	}		
+	
+	for(int i=0; i<m.rows(); i++){
+		for(int j=0; j<m.cols(); j++){
+			failcount += assertEqual(m[i][j],n[i][j],0.000001,"matrix multiplication element");
+		}
+	}		
+
+	// another matrix multiplication	
+	Matrix a(2,3);
+	Matrix b(3,2);
+	Matrix c(2,2);
+	a[0][0] = 3;
+	a[0][1] = 2;
+	a[0][2] = 1;
+	a[1][0] = 1;
+	a[1][1] = 0;
+	a[1][2] = 2;
+	
+	b[0][0] = 1;
+	b[0][1] = 2;
+	b[1][0] = 0;
+	b[1][1] = 1;
+	b[2][0] = 4;
+	b[2][1] = 0;
+	
+	c[0][0] = 7;
+	c[0][1] = 8;
+	c[1][0] = 9;
+	c[1][1] = 2;
+
+	failcount += assertEqual(a*b,c,"matrix multiplication wikipedia");		
+	failcount += assertEqual(2*(a*b),(a)*(2*b),"matrix multiplication and braces");	
+	failcount += assertEqual((a*b)+(a*b),(2*a*b),"matrix multiplication and braces and +");	
+
+	if( verbose ){
+		cout << m1 << endl;	
+		cout << m2 << endl;				
+		cout << m << endl;			
+		cout << n << endl;					
+	}		
+	
+	return failcount;
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -490,13 +571,12 @@ int main(int argc, char* argv[])
 	}
 
 	try {
-
 		failcount+=test_vector_constructors(verbose);	
 		failcount+=test_vector_operators(verbose);	
 		failcount+=test_vector_angle_and_cross(verbose);
 		failcount+=test_matrix_constructors(verbose);
-		failcount+=test_matrix_operators(verbose);		
-
+		failcount+=test_matrix_operators(verbose);	
+		failcount+=test_matrix_multiplication(verbose);
 	} catch(Exception& e){ e.print(); }
 	
 	

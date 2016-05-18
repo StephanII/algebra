@@ -8,6 +8,7 @@
 #ifndef EXCEPTION_H_
 #define EXCEPTION_H_
 
+#include <exception>
 #include <string>
 #include <sstream>
 
@@ -21,7 +22,7 @@ template <typename T>
      return ss.str();
   }
 
-class Exception
+class Exception : public exception
 {
 
 public:
