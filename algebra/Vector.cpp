@@ -57,10 +57,8 @@ Vector::Vector(double x1, double x2, double x3, double x4, double x5, double x6)
 
 
 Vector::Vector(const Vector& vector) :
-	m_values(vector.m_values.size())
-{
- 	m_values = vector.m_values;
-}
+	m_values(vector.m_values)
+{ }
 
 
 
@@ -101,6 +99,19 @@ Vector::operator[](unsigned int i) throw (Exception)
 
 
 
+const double&
+Vector::at(unsigned int i) const throw (Exception)
+{
+	if (i < m_values.size()) {
+    	return m_values.at(i);
+    } else {
+    	stringstream ss; ss << "Error on element access, index " << i << " out of range [0," << (m_values.size()-1) << "].";
+    	throw Exception(__FILE__, __LINE__, ss.str());
+    }
+}
+
+
+
 Vector&
 Vector::operator=(const Vector &vector)
 {
@@ -131,7 +142,7 @@ Vector::operator==(const Vector& vector) const
 bool
 Vector::operator!=(const Vector& vector) const
 {
-	return !(*this == vector);
+	return not(*this == vector);
 }
 
 
@@ -249,9 +260,16 @@ Vector::operator/(double divisor) const throw (Exception)
 
 
 unsigned int
-Vector::dim() const
+Vector::size() const
 {
 	return m_values.size();
+}
+
+
+unsigned int
+Vector::dim() const
+{
+	return size();
 }
 
 

@@ -11,7 +11,6 @@ using namespace std;
 
 class Vector
 {
-friend class Matrix;
 
 public:
 
@@ -35,6 +34,9 @@ public:
 
 	double&
 	operator[](unsigned int i) throw (Exception);
+	
+	const double&
+	at(unsigned int i) const throw (Exception);
 
 	Vector&
 	operator=(const Vector &vector);
@@ -71,6 +73,9 @@ public:
 
 	Vector
 	operator/(double divisor) const throw (Exception);
+
+	unsigned int
+  	size() const;
 
 	unsigned int
   	dim() const;

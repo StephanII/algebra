@@ -1,10 +1,3 @@
-/*
- * Matrix.h
- *
- *  Created on: 04.09.2009
- *      Author: stephanreimann
- */
-
 #ifndef MATRIX_H_
 #define MATRIX_H_
 
@@ -20,48 +13,54 @@ class Matrix
 {
 public:
 
-  Matrix();
+	Matrix();
 
-  Matrix(unsigned int rows, unsigned int cols);
+	Matrix(unsigned int rows, unsigned int cols);
 
-  Matrix(const Matrix& matrix);
+	Matrix(const Matrix& matrix);
 
-  virtual
-  ~Matrix();
+	virtual
+	~Matrix();
 
-  double&
-  operator()(unsigned int row, unsigned int col) throw (Exception);
+	friend ostream&
+	operator<<(ostream& os, const Matrix& matrix);
 
-  Matrix&
-  operator=(const Matrix& matrix);
+  	Vector&
+  	operator[](unsigned int row) throw (Exception);
+  
+	const double&
+  	at(unsigned int row, unsigned int col) const throw (Exception); 
 
-  bool
-  operator==(const Matrix& matrix) const;
+	Matrix&
+	operator=(const Matrix& matrix);
 
-  bool
-  operator!=(const Matrix& matrix) const;
+	bool
+	operator==(const Matrix& matrix) const;
 
-  Matrix
-  operator+(const Matrix& matrix) const throw (Exception);
+	bool
+	operator!=(const Matrix& matrix) const;
 
-  Matrix&
-  operator+=(const Matrix& matrix);
+	Matrix
+	operator+(const Matrix& matrix) const throw (Exception);
 
-  Matrix
-  operator-(const Matrix& matrix) const;
+	Matrix&
+	operator+=(const Matrix& matrix);
 
-  friend Matrix
-  operator-(const Matrix& matrix);
+	Matrix
+	operator-(const Matrix& matrix) const throw (Exception);
 
-  Matrix&
-  operator-=(const Matrix& matrix);
+	Matrix&
+	operator-=(const Matrix& matrix);
 
-  Matrix
-  operator*(double factor) const;
+	friend Matrix
+	operator-(const Matrix& matrix);
 
-  friend Matrix
-  operator*(double factor, const Matrix& matrix);
+	Matrix
+	operator*(double factor) const;
 
+	friend Matrix
+	operator*(double factor, const Matrix& matrix);
+/*
   Matrix
   operator*(const Matrix& matrix) const throw (Exception);
 
@@ -77,20 +76,13 @@ public:
   Matrix
   operator/(const Matrix& matrix) const throw (Exception);
 
-  friend ostream&
-  operator<<(ostream& os, const Matrix& matrix);
+*/
+  unsigned int
+  rows() const;
 
   unsigned int
-  getRows() const;
-
-  unsigned int
-  getCols() const;
-
-  double
-  get(unsigned int row, unsigned int col) const throw (Exception);
-
-  void
-  set(unsigned int row, unsigned int col, double value) throw (Exception);
+  cols() const;
+/*
 
   Matrix
   submatrix(unsigned int remove_row, unsigned int remove_col) const
@@ -147,31 +139,15 @@ public:
   bool
   isUnitary() const;
 
-  bool
-  matchesDimensions(const Matrix& matrix) const;
-
   static Matrix
   UNITY(unsigned int dimension);
 
   static Matrix
   ZERO(unsigned int dimension);
-
+*/
 private:
 
-  void
-  init();
-
-  void
-  copy(const Matrix& matrix);
-
-  /** the number of rows in this matrix */
-  unsigned int m_rows;
-
-  /** the number of columns in this matrix */
-  unsigned int m_cols;
-
-  /** the values */
-  double* m_values;
+  vector<Vector> m_row_vectors;
 };
 
 #endif /* MATRIX_H_ */

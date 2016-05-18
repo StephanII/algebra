@@ -168,7 +168,13 @@ unsigned int test_vector_operators(bool verbose)
 	Vector u(-x0,-x1,-x2);	
 	Vector y(y0,y1,y2);
 	Vector z;
-	
+
+	// get and set
+	Vector t(x);
+	failcount += assertEqual(t[0],x0,"operator [] get");
+	t[0] = x1;
+	failcount += assertEqual(t[0],x1,"operator [] set");
+		
 	// negation operator
 	Vector minus_x = -x;
 	failcount += assertEqual(minus_x[0],-x0,"operator -x[0]");	
@@ -314,6 +320,164 @@ unsigned int test_vector_angle_and_cross(bool verbose)
 
 
 
+unsigned int test_matrix_constructors(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_matrix_constructors\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_real_distribution<double> rdist(-100,100);
+	unsigned int failcount = 0;
+
+	// standard constructor
+	Matrix m;
+	failcount += assertEqual(m.rows(),3,"standard constructor rows");
+	failcount += assertEqual(m.cols(),3,"standard constructor columns");	
+	failcount += assertEqual(m[0][0],0,"standard constructor element 0,0");
+	failcount += assertEqual(m[0][1],0,"standard constructor element 0,1");	
+	failcount += assertEqual(m[0][2],0,"standard constructor element 0,2");
+	failcount += assertEqual(m[1][0],0,"standard constructor element 1,0");
+	failcount += assertEqual(m[1][1],0,"standard constructor element 1,1");
+	failcount += assertEqual(m[1][2],0,"standard constructor element 1,2");
+	failcount += assertEqual(m[2][0],0,"standard constructor element 2,0");
+	failcount += assertEqual(m[2][1],0,"standard constructor element 2,1");
+	failcount += assertEqual(m[2][2],0,"standard constructor element 2,2");
+	try { m[2][3]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+	try { m[3][0]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+	
+	// rows-columns constructor
+	Matrix m2(8,2);
+	failcount += assertEqual(m2.rows(),8,"rows-columns constructor rows");
+	failcount += assertEqual(m2.cols(),2,"rows-columns constructor columns");		
+	failcount += assertEqual(m2[3][0],0,"rows-columns constructor element 3,0");
+	failcount += assertEqual(m2[0][1],0,"rows-columns constructor element 0,1");	
+	failcount += assertEqual(m2[4][0],0,"rows-columns constructor element 4,0");
+	failcount += assertEqual(m2[1][0],0,"rows-columns constructor element 1,0");
+	failcount += assertEqual(m2[5][1],0,"rows-columns constructor element 5,1");
+	failcount += assertEqual(m2[1][0],0,"rows-columns constructor element 1,0");
+	failcount += assertEqual(m2[6][0],0,"rows-columns constructor element 6,0");
+	failcount += assertEqual(m2[2][1],0,"rows-columns constructor element 2,1");
+	failcount += assertEqual(m2[7][1],0,"rows-columns constructor element 7,1");	
+	try { m2[2][3]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+	try { m2[-1][0]; } catch( Exception& e ){ failcount += assertTrue(true,e.desc()); }
+	
+	// copy constructor
+	Matrix m3(2,3);
+	m3[0][0] = rdist(gen);
+	m3[0][1] = rdist(gen);
+	m3[0][2] = rdist(gen);
+	m3[1][0] = rdist(gen);
+	m3[1][1] = rdist(gen);
+	m3[1][2] = rdist(gen);
+	Matrix m3_copy(m3);
+	failcount += assertEqual(m3.rows(),m3_copy.rows(),"copy constructor rows");
+	failcount += assertEqual(m3.cols(),m3_copy.cols(),"copy constructor columns");		
+	failcount += assertEqual(m3[0][0],m3_copy[0][0],"copy constructor element [0][0]");
+	failcount += assertEqual(m3[0][1],m3_copy[0][1],"copy constructor element [0][1]");
+	failcount += assertEqual(m3[0][2],m3_copy[0][2],"copy constructor element [0][2]");
+	failcount += assertEqual(m3[1][0],m3_copy[1][0],"copy constructor element [1][0]");
+	failcount += assertEqual(m3[1][1],m3_copy[1][1],"copy constructor element [1][1]");
+	failcount += assertEqual(m3[1][2],m3_copy[1][2],"copy constructor element [1][2]");
+
+	if( verbose ){
+		cout << m << endl;
+		cout << m2 << endl;		
+		cout << m3 << endl;		
+	}		
+	
+	return failcount;
+}
+
+
+
+unsigned int test_matrix_operators(bool verbose)
+{
+	cout << "\033[1;36mRun Test: test_matrix_operators\033[0m" << endl;
+
+	default_random_engine gen(chrono::high_resolution_clock::now().time_since_epoch().count());
+    uniform_real_distribution<double> rdist(-100,100);
+	unsigned int failcount = 0;
+
+	Matrix m;
+	Matrix m1(2,3);
+	m1[0][0] = rdist(gen);
+	m1[0][1] = rdist(gen);
+	m1[0][2] = rdist(gen);
+	m1[1][0] = rdist(gen);
+	m1[1][1] = rdist(gen);
+	m1[1][2] = rdist(gen);
+	Matrix m2(2,3);
+	m2[0][0] = rdist(gen);
+	m2[0][1] = rdist(gen);
+	m2[0][2] = rdist(gen);	
+	m2[1][0] = rdist(gen);
+	m2[1][1] = rdist(gen);
+	m2[1][2] = rdist(gen);		
+
+	// operator == and !=
+	failcount += assertEqual(m1,m1,"operator == 1");
+	failcount += assertEqual(m2,m2,"operator == 2");
+	failcount += assertDifferent(m,m1,"operator != 1");	
+	failcount += assertDifferent(m,m2,"operator != 2");	
+	failcount += assertDifferent(m1,m2,"operator != 2");
+	
+	// operator =
+	m = m1;	
+	failcount += assertEqual(m,m1,"operator = 1");		
+	m = m2;
+	failcount += assertEqual(m,m2,"operator = 2");
+	
+	// operator + and -
+	Matrix sum = m1+m2;
+	failcount += assertEqual(sum[0][0],m1[0][0]+m2[0][0],"standard sum element [0][0]");
+	failcount += assertEqual(sum[0][1],m1[0][1]+m2[0][1],"standard sum element [0][1]");
+	failcount += assertEqual(sum[0][2],m1[0][2]+m2[0][2],"standard sum element [0][2]");	
+	failcount += assertEqual(sum[1][0],m1[1][0]+m2[1][0],"standard sum element [1][0]");
+	failcount += assertEqual(sum[1][1],m1[1][1]+m2[1][1],"standard sum element [1][1]");
+	failcount += assertEqual(sum[1][2],m1[1][2]+m2[1][2],"standard sum element [1][2]");	
+	Matrix sum2(2,3);
+	sum2+=m1;
+	sum2+=m2;
+	failcount += assertEqual(sum2,sum,"standard sum 2");	
+	Matrix diff = m1-m2;
+	failcount += assertEqual(diff[0][0],m1[0][0]-m2[0][0],"standard diff element [0][0]");
+	failcount += assertEqual(diff[0][1],m1[0][1]-m2[0][1],"standard diff element [0][1]");
+	failcount += assertEqual(diff[0][2],m1[0][2]-m2[0][2],"standard diff element [0][2]");	
+	failcount += assertEqual(diff[1][0],m1[1][0]-m2[1][0],"standard diff element [1][0]");
+	failcount += assertEqual(diff[1][1],m1[1][1]-m2[1][1],"standard diff element [1][1]");
+	failcount += assertEqual(diff[1][2],m1[1][2]-m2[1][2],"standard diff element [1][2]");	
+	Matrix diff2(2,3);
+	diff2+=m1;
+	diff2-=m2;
+	failcount += assertEqual(diff2,diff,"standard diff 2");
+	
+	// factor
+	double f=rdist(gen);
+	failcount += assertEqual(2*m1,m1*2,"factor 2");	
+	failcount += assertEqual(-m2+m1,diff,"factor -1");	
+	failcount += assertEqual(m2,-(-(m2)),"factor -1*-1");
+	failcount += assertEqual(f*(m1-m2)[0][0],(f*m1-f*m2)[0][0],0.000001,"algebra [0][0]");
+	failcount += assertEqual(f*(m1-m2)[0][1],(f*m1-f*m2)[0][1],0.000001,"algebra [0][1]");
+	failcount += assertEqual(f*(m1-m2)[0][2],(f*m1-f*m2)[0][2],0.000001,"algebra [0][2]");
+	failcount += assertEqual(f*(m1-m2)[1][0],(f*m1-f*m2)[1][0],0.000001,"algebra [1][0]");
+	failcount += assertEqual(f*(m1-m2)[1][1],(f*m1-f*m2)[1][1],0.000001,"algebra [1][1]");
+	failcount += assertEqual(f*(m1-m2)[1][2],(f*m1-f*m2)[1][2],0.000001,"algebra [1][2]");					
+	failcount += assertEqual(f*2*m1[0][0],f*(m1+m1+m2-m2)[0][0],0.000001,"algebra2 [0][0]");
+	failcount += assertEqual(f*2*m1[0][1],f*(m1+m1+m2-m2)[0][1],0.000001,"algebra2 [0][1]");
+	failcount += assertEqual(f*2*m1[0][2],f*(m1+m1+m2-m2)[0][2],0.000001,"algebra2 [0][2]");
+	failcount += assertEqual(f*2*m1[1][0],f*(m1+m1+m2-m2)[1][0],0.000001,"algebra2 [1][0]");
+	failcount += assertEqual(f*2*m1[1][1],f*(m1+m1+m2-m2)[1][1],0.000001,"algebra2 [1][1]");
+	failcount += assertEqual(f*2*m1[1][2],f*(m1+m1+m2-m2)[1][2],0.000001,"algebra2 [1][2]");
+	
+	if( verbose ){
+		cout << m1 << endl;	
+		cout << m2 << endl;			
+		cout << sum << endl;	
+		cout << diff << endl;			
+	}		
+	
+	return failcount;
+}
+
 int main(int argc, char* argv[])
 {
 	double failcount = 0;
@@ -330,6 +494,8 @@ int main(int argc, char* argv[])
 		failcount+=test_vector_constructors(verbose);	
 		failcount+=test_vector_operators(verbose);	
 		failcount+=test_vector_angle_and_cross(verbose);
+		failcount+=test_matrix_constructors(verbose);
+		failcount+=test_matrix_operators(verbose);		
 
 	} catch(Exception& e){ e.print(); }
 	

@@ -2,7 +2,7 @@
 CC = llvm-g++
 CPP_FILES := $(wildcard algebra/*.cpp)
 OBJ_FILES := $(addprefix obj/,$(notdir $(CPP_FILES:.cpp=.o)))
-LD_FLAGS := 
+LD_FLAGS := #-lOpenCL  
 CC_FLAGS := -Wall -std=c++11 -pedantic -O3 #(optimierung) # -g (for debugging)
 
 runtest.exe: obj/test.o $(OBJ_FILES)

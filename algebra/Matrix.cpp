@@ -3,237 +3,195 @@
 #include <sstream>
 
 Matrix::Matrix() :
-	m_rows(3), 
-	m_cols(3), 
-	m_values(NULL)
-{
-	init();
-}
+	m_row_vectors(3)
+{ }
 
 
 
 Matrix::Matrix(unsigned int rows, unsigned int cols) :
-	m_rows(rows),
-	m_cols(cols),
-	m_values(NULL)
-{
-	init();
-}
+	m_row_vectors(rows,Vector(cols))
+{ }
 
 
 
 Matrix::Matrix(const Matrix& matrix) :
-	m_rows(0), 
-	m_cols(0),
-	m_values(NULL)
-{
-	copy(matrix);
-}
+	m_row_vectors(matrix.m_row_vectors)
+{ }
 
-/**
- * destructor
- */
+
+
 Matrix::~Matrix()
-{
-  delete[] m_values;
-}
+{ }
 
-/**
- * @param row
- *     the row
- * @param col
- *     the column
- *
- * @return reference of given position
- * @throw Exception, if col or row index is out of bounds
- */
-double&
-Matrix::operator()(unsigned int row, unsigned int col) throw (Exception)
+
+
+ostream&
+operator<<(ostream& os, const Matrix& matrix)
 {
-  if (col >= m_cols || row >= m_rows)
-    {
-      throw Exception(__FILE__, __LINE__, "Error, index out of bounds");
-    }
-  else
-    {
-      return *(m_values + row * m_cols + col);
+	if (matrix.rows() == 0 || matrix.cols() == 0) {
+    	return os << "Matrix(empty)";
+    } else {
+    	os << "Matrix" << matrix.rows() << "X" << matrix.cols() << "{";
+    	for (unsigned int row = 0; row < matrix.rows(); row++) {
+        	os << "(" << matrix.at(row,0);
+        	for (unsigned int col = 1; col < matrix.cols(); col++) {
+	            os << ", " << matrix.at(row,col);
+            }
+    		os << ")";
+        }
+   		os << "}";
+    	return os;
     }
 }
 
-/**
- * self assignment safe assignment operator
- *
- * @param matrix
- *     a matrix to assign
- *
- * @return a reference to this
- */
+
+
+Vector&
+Matrix::operator[](unsigned int row) throw (Exception)
+{
+	if (row >= m_row_vectors.size()) {
+    	stringstream ss; ss << "Error on operator [], row " << row << " out of range [0," << m_row_vectors.size() << "].";
+    	throw Exception(__FILE__, __LINE__, ss.str());
+	} else {
+    	return m_row_vectors[row];
+    }
+}
+
+
+
+const double&
+Matrix::at(unsigned int row, unsigned int col) const throw (Exception)
+{
+	if (row >= m_row_vectors.size()) {
+    	stringstream ss; ss << "Error on Matrix element access, index " << row << "," << col << " out of range " << this->rows() << "x" << this->cols() << ".";
+    	throw Exception(__FILE__, __LINE__, ss.str());
+	} else {
+    	return m_row_vectors.at(row).at(col);
+    }
+}
+
+
+
 Matrix&
 Matrix::operator=(const Matrix &matrix)
 {
-  copy(matrix);
-  return *this;
+	m_row_vectors = matrix.m_row_vectors;
+	return *this;
 }
 
-/**
- * @param matrix
- *     a matrix to compare
- *
- * @return true if matrices are equal
- */
+
+
 bool
 Matrix::operator==(const Matrix& matrix) const
 {
-  if (!matchesDimensions(matrix))
-    {
-      return false;
+	if ( not(rows() == matrix.rows() && cols() == matrix.cols()) ) {
+		return false;
     }
 
-  for (unsigned int i = 0; i < (m_rows * m_cols); i++)
-    {
-      if (m_values[i] != matrix.m_values[i])
-        {
-          return false;
+	for (unsigned int row = 0; row<rows(); row++) {
+		for (unsigned int col = 0; col<cols(); col++) {	
+			if (at(row,col) != matrix.at(row,col)) {
+	        	return false;
+	        }
         }
     }
 
-  return true;
+	return true;
 }
 
-/**
- * @param matrix
- *     a matrix to compare
- *
- * @return true if matrices are not equal
- */
+
+
 bool
 Matrix::operator!=(const Matrix& matrix) const
 {
-  return !(*this == matrix);
+  return not (*this == matrix);
 }
 
-/**
- * @param matrix
- *     the matrix to add
- *
- * @return sum matrix this+m
- * @throw Exception if matrix sizes does not match
- */
+
+
 Matrix
 Matrix::operator+(const Matrix& matrix) const throw (Exception)
 {
-  if (m_cols != matrix.m_cols || m_rows != matrix.m_rows)
-    {
-      throw Exception(__FILE__, __LINE__,
-          "Error, trying to add matrices with different dimensions");
-    }
-  else
-    {
-      Matrix sum(m_rows, m_cols);
-      for (unsigned int row = 0; row < m_rows; row++)
-        {
-          for (unsigned int col = 0; col < m_cols; col++)
-            {
-              sum(row, col) = get(row, col) + matrix.get(row, col);
-            }
-        }
-      return sum;
+   	unsigned int rows = this->rows();
+   	unsigned int cols = this->cols();
+
+	if ( not(rows == matrix.rows() && cols == matrix.cols()) ) {
+    	stringstream ss; ss << "Error on Matrix operator+, dimension " << rows << "x" << cols << " does not match " << matrix.rows() << "x" << matrix.cols() << ".";
+    	throw Exception(__FILE__, __LINE__, ss.str());
+    } else {
+		Matrix sum(rows, cols);
+	    for (unsigned int row = 0; row < rows; row++) {
+			for (unsigned int col = 0; col < cols; col++) {
+        		sum[row][col] = at(row,col) + matrix.at(row,col);
+        	}
+    	}
+    	return sum;
     }
 }
 
-/**
- * @param matrix
- *     another matrix to add
- *
- * @return *this
- */
+
+
 Matrix&
-Matrix::operator+=(const Matrix& matrix)
+Matrix::operator+=(const Matrix& matrix) 
 {
-  (*this) = (*this) + matrix;
-  return (*this);
+	(*this) = (*this) + matrix;
+	return (*this);
 }
 
-/**
- * @param matrix
- *     a matrix to substract
- *
- * @return the difference this - m
- */
+
+
 Matrix
-Matrix::operator-(const Matrix& matrix) const
+Matrix::operator-(const Matrix& matrix) const throw (Exception)
 {
-  return (*this) + (-1 * matrix);
+	return (*this) + (-1 * matrix);
 }
 
-/**
- * @param matrix
- *     a matrix
- *
- * @return a matrix where all elements have inverse signs
- */
-Matrix
-operator-(const Matrix& matrix)
-{
-  return (-1 * matrix);
-}
 
-/**
- * @param matrix
- *     a matrix to substract
- *
- * @return *this
- */
+
 Matrix&
 Matrix::operator-=(const Matrix& matrix)
 {
-  (*this) = (*this) - matrix;
-  return (*this);
+	(*this) = (*this) - matrix;
+	return (*this);
 }
 
-/**
- * @param factor
- *     a factor to multiply
- *
- * @return a matrix where all elements are multiplied with the given factor
- */
+
+
+Matrix
+operator-(const Matrix& matrix)
+{
+	return (-1 * matrix);
+}
+
+
+
 Matrix
 Matrix::operator*(double factor) const
 {
-  Matrix product(m_rows, m_cols);
+   	unsigned int rows = this->rows();
+   	unsigned int cols = this->cols();
+   	
+	Matrix product(rows, cols);
 
-  for (unsigned int row = 0; row < m_rows; row++)
-    {
-      for (unsigned int col = 0; col < m_cols; col++)
-        {
-          product(row, col) = factor * get(row, col);
+	for (unsigned int row = 0; row < rows; row++) {
+    	for (unsigned int col = 0; col < cols; col++) {
+        	product[row][col] = factor * at(row,col);
         }
     }
 
-  return product;
+	return product;
 }
 
-/**
- * @param factor
- *     a factor to multiply
- * @param matrix
- *     a matrix to multiply with f
- *
- * @return a matrix where all elements are multiplied with the given factor
- */
+
+
 Matrix
 operator*(double factor, const Matrix& matrix)
 {
-  return matrix * factor;
+	return matrix * factor;
 }
 
-/**
- * @param matrix
- *     a matrix to multiply
- *
- * @return the matrix product this*matrix
- * @throw Exception if matrix dimensions do not match
- */
+
+/*
 Matrix
 Matrix::operator*(const Matrix& matrix) const throw (Exception)
 {
@@ -261,13 +219,8 @@ Matrix::operator*(const Matrix& matrix) const throw (Exception)
   return product;
 }
 
-/**
- * @param vector
- *     a vector to multiplicate
- * 
- * @return the result of this*vector
- * @throw Exception if dimensions do not match
- */
+
+
 Vector
 Matrix::operator*(const Vector& vector) const throw (Exception)
 {
@@ -288,13 +241,8 @@ Matrix::operator*(const Vector& vector) const throw (Exception)
   return product;
 }
 
-/**
- * @param matrix
- *     another matrix to multiply
- * 
- * @return *this
- * @throw Exceptions if dimensions does not match
- */
+
+
 Matrix&
 Matrix::operator*=(const Matrix& matrix) throw (Exception)
 {
@@ -302,13 +250,8 @@ Matrix::operator*=(const Matrix& matrix) throw (Exception)
   return (*this);
 }
 
-/**
- * @param divisor
- *     the divisor to divide the matrix elements
- *
- * @return this/divisor
- * @throw Exception if divisor=0 (division by zero)
- */
+
+
 Matrix
 Matrix::operator/(double divisor) const throw (Exception)
 {
@@ -319,13 +262,8 @@ Matrix::operator/(double divisor) const throw (Exception)
   return (1 / divisor) * (*this);
 }
 
-/**
- * @param matrix
- *     the divisor to divide the matrix 
- *
- * @return this * matrix^-1
- * @throw Exception if matrix is not invertible (division by zero) or the dimensions do not match
- */
+
+
 Matrix
 Matrix::operator/(const Matrix& matrix) const throw (Exception)
 {
@@ -336,107 +274,27 @@ Matrix::operator/(const Matrix& matrix) const throw (Exception)
   return (*this) * matrix.inverse();
 }
 
-/**
- * @param os
- *     an ofstream object
- * @param matrix
- *     a matrix to stream
- *
- * @return the ofstream object containing the matrix data
- */
-ostream&
-operator<<(ostream& os, const Matrix& matrix)
-{
-  if (matrix.m_rows == 0 || matrix.m_cols == 0)
-    {
-      return os << "Matrix" << matrix.m_rows << "X" << matrix.m_cols
-          << "(empty)";
-    }
-  else
-    {
-      os << "Matrix" << matrix.m_rows << "X" << matrix.m_cols << "\n";
-      for (unsigned int row = 0; row < matrix.m_rows; row++)
-        {
-          os << " (" << matrix.get(row, 0);
-          for (unsigned int col = 1; col < matrix.m_cols; col++)
-            {
-              os << ", " << matrix.get(row, col);
-            }
-          os << ")\n";
-        }
-      return os;
-    }
-}
 
-/**
- * @return the number of rows
- */
+
+*/
 unsigned int
-Matrix::getRows() const
+Matrix::rows() const
 {
-  return m_rows;
+	return m_row_vectors.size();
 }
 
-/**
- * @return the number of columns
- */
+
+
 unsigned int
-Matrix::getCols() const
+Matrix::cols() const
 {
-  return m_cols;
+	return m_row_vectors.at(0).size();
 }
 
-/**
- * @param row
- *     the row [0...]
- * @param col
- *     the column [0...]
- *
- * @return the value at the given row/col position
- * @throw Exception if index is out of bounds
- */
-double
-Matrix::get(unsigned int row, unsigned int col) const throw (Exception)
-{
-  if (col >= m_cols || row >= m_rows)
-    {
-      throw Exception(__FILE__, __LINE__, "Error, index out of bounds");
-    }
-  else
-    {
-      return m_values[row * m_cols + col];
-    }
-}
+/*
 
-/**
- * @param row
- *     the row [0...]
- * @param col
- *     the column [0...]
- * @param value
- *     the value to set
- *
- * @throw Exception if index is out of bounds
- */
-void
-Matrix::set(unsigned int row, unsigned int col, double value) throw (Exception)
-{
-  if (col >= m_cols || row >= m_rows)
-    {
-      throw Exception(__FILE__, __LINE__, "Error, index out of bounds");
-    }
-  m_values[row * m_cols + col] = value;
-}
 
-/**
- * @param remove_row
- *     the row that should be removed
- * @param remove_col
- *     the column that should be removed
- *
- * @return a submatrix, without the given row and column
- * @throw Exception if row or col is out of bounds
- */
+
 Matrix
 Matrix::submatrix(unsigned int remove_row, unsigned int remove_col) const
     throw (Exception)
@@ -468,9 +326,8 @@ Matrix::submatrix(unsigned int remove_row, unsigned int remove_col) const
   return submatrix;
 }
 
-/**
- * @return the transposed matrix
- */
+
+
 Matrix
 Matrix::transposed() const
 {
@@ -487,27 +344,16 @@ Matrix::transposed() const
   return transposed_matrix;
 }
 
-/**
- * @param matrix
- *     a matrix to transpose
- *
- * @return the transposed matrix
- */
+
+
 Matrix
 transposed(const Matrix& matrix)
 {
   return matrix.transposed();
 }
 
-/**
- * @param row
- *     the row index [0...]
- * @param col
- *     the column index [0...]
- *
- * @return the cofactor (-1)^(row+col)* Minor(row,col)
- * @throw Exception if row or column index is out of bounds
- */
+
+
 double
 Matrix::cofactor(unsigned int row, unsigned int col) const throw (Exception)
 {
@@ -524,13 +370,8 @@ Matrix::cofactor(unsigned int row, unsigned int col) const throw (Exception)
   return pow(double(-1), double(row + col)) * submatrix(row, col).det();
 }
 
-/**
- * calculates the adjugate matrix
- * transposing of cofactor matrix will be made without calling transposed()
- *
- * @return the adjugate matrix
- * @throw Exception if this is no square matrix
- */
+
+
 Matrix
 Matrix::adjugate() const throw (Exception)
 {
@@ -553,53 +394,32 @@ Matrix::adjugate() const throw (Exception)
   return adjugate_matrix;
 }
 
-/**
- * calculates the adjugate matrix
- * transposing of cofactor matrix will be made without calling transposed()
- *
- * @param matrix
- *     a matrix to calculate the adjugate matrix from
- *
- * @return the adjugate matrix
- * @throw Exception if this is no square matrix
- */
+
+
 Matrix
 adjugate(const Matrix& matrix) throw (Exception)
 {
   return matrix.adjugate();
 }
 
-/**
- * at the moment, this matrix class operates on real numbers
- * and in this case the conjugate is equal to the transposed
- *
- * @return the conjugate transposed matrix of this
- */
+
+
 Matrix
 Matrix::conjugate() const
 {
   return transposed();
 }
 
-/**
- * at the moment, this matrix class operates on real numbers
- * and in this case the conjugate is equal to the transposed
- *
- * @param matrix
- *     a matrix to conjugate
- *
- * @return the conjugate transposed matrix
- */
+
+
 Matrix
 conjugate(const Matrix& matrix)
 {
   return matrix.conjugate();
 }
 
-/**
- * @return the inverse matrix
- * @throw Exception if this is no square matrix or this is not invertible
- */
+
+
 Matrix
 Matrix::inverse() const throw (Exception)
 {
@@ -617,23 +437,16 @@ Matrix::inverse() const throw (Exception)
   return (1 / det()) * adjugate();
 }
 
-/**
- * @param matrix
- *     a matrix to invert
- *
- * @return the inverse matrix
- * @throw Exception if this is no square matrix or this is not invertible
- */
+
+
 Matrix
 inverse(const Matrix& matrix) throw (Exception)
 {
   return matrix.inverse();
 }
 
-/**
- * @return the determinant of this matrix
- * @throw Exception if this is no square matrix
- */
+
+
 double
 Matrix::det() const throw (Exception)
 {
@@ -671,10 +484,8 @@ Matrix::det() const throw (Exception)
     }
 }
 
-/**
- * @return the trace of this matrix
- * @throw Exception if matrix is not square
- */
+
+
 double
 Matrix::trace() const throw (Exception)
 {
@@ -692,28 +503,16 @@ Matrix::trace() const throw (Exception)
   return trace;
 }
 
-/**
- * @param matrix
- *     a matrix to calculate the trace
- *
- * @return the trace of this matrix
- * @throw Exception if matrix is not square
- */
+
+
 double
 trace(const Matrix& matrix) throw (Exception)
 {
   return matrix.trace();
 }
 
-/**
- * @param matrix
- *     the matrix to raise to a given power
- * @param power
- *     the power
- *
- * @return matrix^power
- * @throw Exception if dimensions leeds to undefined terms
- */
+
+
 Matrix
 pow(const Matrix& matrix, int power) throw (Exception)
 {
@@ -740,22 +539,16 @@ pow(const Matrix& matrix, int power) throw (Exception)
   return powered_matrix;
 }
 
-/**
- * @param matrix
- *     a matrix
- *
- * @return the determinant of the matrix
- * @throw Exception if this is no square matrix
- */
+
+
 double
 det(const Matrix& matrix) throw (Exception)
 {
   return matrix.det();
 }
 
-/**
- * @return true if this is a square NxN matrix
- */
+
+
 bool
 Matrix::isSquare() const
 {
@@ -766,9 +559,8 @@ Matrix::isSquare() const
   return false;
 }
 
-/**
- * @return true if this matrix is invertible (det!=0)
- */
+
+
 bool
 Matrix::isInvertible() const
 {
@@ -779,9 +571,8 @@ Matrix::isInvertible() const
   return true;
 }
 
-/**
- * @return true if this matrix is unitary (U*==1/U)
- */
+
+
 bool
 Matrix::isUnitary() const
 {
@@ -800,22 +591,6 @@ Matrix::isUnitary() const
     {
       return false;
     }
-}
-
-/**
- * @param matrix
- *     another matrix to compare dimensions
- *
- * @return true if number of rows and cols are equal in both matrices
- */
-bool
-Matrix::matchesDimensions(const Matrix& matrix) const
-{
-  if (m_rows == matrix.m_rows && m_cols == matrix.m_cols)
-    {
-      return true;
-    }
-  return false;
 }
 
 
@@ -842,40 +617,4 @@ Matrix::ZERO(unsigned int dimension)
 	return zero_matrix;
 }
 
-
-
-/**
- * set all elements to 0
- */
-void
-Matrix::init()
-{
-  m_values = new double[m_rows * m_cols];
-
-  for (unsigned int i = 0; i < (m_rows * m_cols); i++)
-    {
-      m_values[i] = 0;
-    }
-}
-
-
-
-void
-Matrix::copy(const Matrix& matrix)
-{
-	double* old_values = m_values;
- 	m_values = new double[matrix.m_rows * matrix.m_cols];
-  
-	if( NULL!=old_values ){
-		delete[] old_values;
-		old_values = NULL;
-	}
-
-	m_rows = matrix.m_rows;
-	m_cols = matrix.m_cols;
- 	
-	for (unsigned int i = 0; i < (m_rows * m_cols); i++){
-		m_values[i] = matrix.m_values[i];
-    }
-}
-
+*/
