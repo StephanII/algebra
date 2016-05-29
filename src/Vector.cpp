@@ -254,7 +254,7 @@ Vector::operator/(double divisor) const throw (Exception)
 		throw Exception(__FILE__, __LINE__, "Error, division by zero.");
     }
 
-	return (1 / divisor) * (*this);
+	return (1. / divisor) * (*this);
 }
 
 

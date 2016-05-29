@@ -310,7 +310,6 @@ Matrix::submatrix(unsigned int remove_row, unsigned int remove_col) const throw 
 	unsigned int submatrix_cols = cols - 1;
   	Matrix submatrix(submatrix_rows,submatrix_cols);
 
-
 	for (unsigned int row = 0, src_row = 0; row < submatrix_rows; row++, src_row++) {
     	for (unsigned int col = 0, src_col = 0; col < submatrix_cols; col++, src_col++) {
           	if (src_row == remove_row) {
