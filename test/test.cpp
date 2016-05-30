@@ -1,6 +1,6 @@
-#include "../algebra/Exception.hpp"
-#include "../algebra/Vector.hpp"
-#include "../algebra/Matrix.hpp"
+#include "../src/Exception.hpp"
+#include "../src/Vector.hpp"
+#include "../src/Matrix.hpp"
 
 #include <iostream>
 #include <string>
